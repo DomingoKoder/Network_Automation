@@ -1,14 +1,19 @@
 import paramiko
+import re
 from datetime import datetime
 from time import sleep
+from tabulate import tabulate
 
+router_ip = "192.168.0.172"
+router_username = "admin"
+router_password = "password"
 
-USER = "bw76qilsa"
-PASSWORD = "wKGF/Y{<qgKM!4$s"
-router_ip = "10.112.204.22"
+protocols = ['tcp', 'udp', 'icmp', 'esp', 'pptp', 'rsvp']
+
 
 
 def nat_check():
+    
     ssh = paramiko.SSHClient()
     ssh.load_system_host_keys()
 
@@ -17,34 +22,38 @@ def nat_check():
 
     ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
     ssh.connect(router_ip, 
-                username=USER, 
-                password=PASSWORD,
+                username=router_username, 
+                password=router_password,
                 look_for_keys=False)
 
-
-    ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command("show ip nat translations | i 63.117.68.")
+    ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command("show ip nat translations | i 10.0.0")
     output = ssh_stdout.readlines()
-    output = "\n".join(entry for entry in str(output).splitlines() if entry.strip())
-    if not output:
-        linia = f"{current_time} Output not found"
-    else:
-        linia = current_time.join(output)
+    #wywalenie blank line przed
+    for linijka in output:
+        linijka=linijka.rstrip()
+
+    linia = current_time.join(output)
+    linia = linia.strip()
     
     file = open("nat.txt", 'a')
-
-    if "63.117.68." in linia:
-        file.write(linia)
+    if "10.0.0" in linia:
+        file.write(linia + "\n")
         file.close()
-
     ssh.close()
+    print(linia)
+
+nat_check()
 
 while True:
     nat_check()
-    sleep(3600)
+    sleep(10)
 
-#from keyring import get_password
-#PASSWORD = get_password("LSA", LSA)
-#logger
+
+#time.sleep(1.30)
+
+
+
+
 
 
 
