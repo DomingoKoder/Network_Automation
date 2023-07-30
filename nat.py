@@ -14,26 +14,23 @@ def nat_check():
 
     now = datetime.now()
     current_time = now.strftime("%H:%M:%S")
-
-
     net_connect = ConnectHandler(**device)
-    command = "show ip nat translations | i 10.0.0"
+    command = "show ip nat translations | i 128.128.0.2"
     output = net_connect.send_command(command)
-
-
     nats = output.split()
-
     nat1 = nats[1]
     nat2 = nats[2]
     nat3 = nats[3]
     nat4 = nats[4]
     nat0 = nats[0]
 
+
+    
     linia = (f"[{current_time}]--[{nat0}]--[{nat2}]--[{nat1}]--[{nat3}]--[{nat4}]")
-    print(f'[{Fore.YELLOW}{current_time}{Fore.WHITE}]--[{Fore.GREEN}{nat0}{Fore.WHITE}]--[{Fore.RED}{nat2}{Fore.WHITE}]--[{nat1}]--[{Fore.RED}{nat4}{Fore.WHITE}]--[user]')
+    print(f'[{Fore.YELLOW}{current_time}{Fore.WHITE}]  [{Fore.GREEN}{nat0}{Fore.WHITE}]  [{Fore.RED}{nat2}{Fore.WHITE}]-->[{nat1}]-->[{Fore.RED}{nat4}{Fore.WHITE}]  [{Fore.GREEN}USER{Fore.WHITE}]')
 
     file = open("nat.txt", 'a')
-    if "10.0.0" in linia:
+    if "128.128.0.2" in linia:
         file.write(linia + "\n")
         file.close()
 
@@ -43,3 +40,9 @@ nat_check()
 while True:
     nat_check()
     sleep(10)
+
+
+#todosy:
+#user z ise na podstawie source ip
+#dest ip z palo
+#user ck w AD
