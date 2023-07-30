@@ -1,61 +1,45 @@
-import paramiko
-import re
+from netmiko import ConnectHandler
 from datetime import datetime
 from time import sleep
-from tabulate import tabulate
+from colorama import Back, Fore, Style
 
-router_ip = "192.168.0.172"
-router_username = "admin"
-router_password = "password"
-
-protocols = ['tcp', 'udp', 'icmp', 'esp', 'pptp', 'rsvp']
-
-
+device = {
+    "device_type": "cisco_ios",
+    "ip": "192.168.0.172",
+    "username": "admin",
+    "password": "password",
+}
 
 def nat_check():
-    
-    ssh = paramiko.SSHClient()
-    ssh.load_system_host_keys()
 
     now = datetime.now()
-    current_time = now.strftime("[ %H:%M:%S ]   ")
+    current_time = now.strftime("%H:%M:%S")
 
-    ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-    ssh.connect(router_ip, 
-                username=router_username, 
-                password=router_password,
-                look_for_keys=False)
 
-    ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command("show ip nat translations | i 10.0.0")
-    output = ssh_stdout.readlines()
-    #wywalenie blank line przed
-    for linijka in output:
-        linijka=linijka.rstrip()
+    net_connect = ConnectHandler(**device)
+    command = "show ip nat translations | i 10.0.0"
+    output = net_connect.send_command(command)
 
-    linia = current_time.join(output)
-    linia = linia.strip()
-    
+
+    nats = output.split()
+
+    nat1 = nats[1]
+    nat2 = nats[2]
+    nat3 = nats[3]
+    nat4 = nats[4]
+    nat0 = nats[0]
+
+    linia = (f"[{current_time}]--[{nat0}]--[{nat2}]--[{nat1}]--[{nat3}]--[{nat4}]")
+    print(f'[{Fore.YELLOW}{current_time}{Fore.WHITE}]--[{Fore.GREEN}{nat0}{Fore.WHITE}]--[{Fore.RED}{nat2}{Fore.WHITE}]--[{nat1}]--[{Fore.RED}{nat4}{Fore.WHITE}]--[user]')
+
     file = open("nat.txt", 'a')
     if "10.0.0" in linia:
         file.write(linia + "\n")
         file.close()
-    ssh.close()
-    print(linia)
 
+    net_connect.disconnect()
 nat_check()
 
 while True:
     nat_check()
     sleep(10)
-
-
-#time.sleep(1.30)
-
-
-
-
-
-
-
-
-
